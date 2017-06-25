@@ -1,13 +1,19 @@
 package com.wuyong.controller;
 
+import com.wuyong.aspect.HttpAspect;
+import com.wuyong.comment.ServerResponse;
 import com.wuyong.repository.GirlRepository;
 import com.wuyong.pojo.Girl;
 import com.wuyong.service.IGirlService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
@@ -16,6 +22,8 @@ import java.util.List;
  */
 @RestController
 public class GirlController {
+
+    public static final Logger logger = LoggerFactory.getLogger(GirlController.class);
 
     @Autowired
     private GirlRepository girlRepository;
@@ -35,17 +43,16 @@ public class GirlController {
     /**
      * 添加一个girl
      *
-     * @param cupSize
-     * @param age
+     * @param girl          封装对象
+     * @param bindingResult valid结果
      * @return
      */
     @RequestMapping(value = "addGirl")
-    public Girl addGirl(@RequestParam(value = "cupSize", required = false, defaultValue = "A") String cupSize,
-                        @RequestParam(value = "age", required = false, defaultValue = "18") Integer age) {
-        Girl girl = new Girl();
-        girl.setCupSize(cupSize);
-        girl.setAge(age);
-        return girlRepository.save(girl);
+    public ServerResponse addGirl(@Valid Girl girl, BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            return ServerResponse.createByErrorMessage(bindingResult.getFieldError().getDefaultMessage());
+        }
+        return ServerResponse.createBySuccess(girlRepository.save(girl));
     }
 
     /**
@@ -104,7 +111,7 @@ public class GirlController {
     }
 
     @RequestMapping(value = "insert2")
-    public void insert2(){
+    public void insert2() {
         iGirlService.insert2();
     }
 
